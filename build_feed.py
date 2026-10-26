@@ -70,6 +70,39 @@ def make_pin(img_bytes, title, sub, path):
     pin.save(path, quality=86)
 
 
+def write_page(key, title, sub, etsy):
+    # Pinterest pins must link to the claimed site, so each pin opens this page with a big button to the Etsy listing.
+    os.makedirs(os.path.join(OUT, "p"), exist_ok=True)
+    t = html.escape(title)
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{t} | Main Character Co</title>
+<meta property="og:title" content="{t}">
+<meta property="og:image" content="{SITE}/img/{key}.jpg">
+<style>
+body{{margin:0;font-family:system-ui,sans-serif;background:#1c222c;color:#faf6f0;display:flex;flex-direction:column;align-items:center;padding:24px 16px;gap:18px}}
+img{{max-width:min(420px,100%);border-radius:10px}}
+h1{{font-size:24px;text-align:center;margin:0;max-width:30ch}}
+p{{margin:0;color:#f2a05a}}
+a.buy{{background:#f1641e;color:#fff;text-decoration:none;font-weight:700;font-size:20px;padding:16px 28px;border-radius:999px}}
+small{{color:#aab2be}}
+</style>
+</head>
+<body>
+<img src="../img/{key}.jpg" alt="{t}">
+<h1>{t}</h1>
+<p>{html.escape(sub)}</p>
+<a class="buy" href="{etsy}">See it on Etsy</a>
+<small>Main Character Co · funny matching family shirts</small>
+</body>
+</html>
+"""
+    open(os.path.join(OUT, "p", key + ".html"), "w").write(page)
+
+
 def main():
     tok = os.environ["PRINTIFY_TOKEN"].strip()
     os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
@@ -90,8 +123,10 @@ def main():
             path = os.path.join(OUT, "img", key + ".jpg")
             if not os.path.exists(path):
                 make_pin(get(img), title, sub, path)
+            etsy = f"https://www.etsy.com/listing/{ext['id']}"
+            write_page(key, title, sub, etsy)
             items.append({"key": key, "title": title, "desc": re.sub(r"\s+", " ", p.get("description", ""))[:450],
-                          "link": f"https://www.etsy.com/listing/{ext['id']}", "img": f"{SITE}/img/{key}.jpg",
+                          "link": f"{SITE}/p/{key}.html", "img": f"{SITE}/img/{key}.jpg",
                           "date": p.get("created_at") or datetime.now(timezone.utc).isoformat()})
         if page >= d.get("last_page", 1):
             break
@@ -117,7 +152,7 @@ def main():
 <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
 <channel>
   <title>Main Character Co</title>
-  <link>https://www.etsy.com/shop/MainCharacterCoUS</link>
+  <link>{SITE}/</link>
   <description>Funny matching family shirts and sweatshirts</description>{rows}
 </channel>
 </rss>
