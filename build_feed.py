@@ -124,7 +124,7 @@ def main():
 """
     open(os.path.join(OUT, "feed.xml"), "w").write(feed)
     open(os.path.join(OUT, "index.html"), "w").write(
-        "<!doctype html><meta charset=utf-8><title>Main Character Co pins</title>"
+        "<!doctype html><meta charset=utf-8><meta name=\"p:domain_verify\" content=\"e2ea8d7d66273fbbdae183edb528cea3\"/><title>Main Character Co pins</title>"
         "<p>Pin feed for <a href='https://www.etsy.com/shop/MainCharacterCoUS'>Main Character Co</a>.</p>")
     print(f"{len(items)} items in feed")
 
